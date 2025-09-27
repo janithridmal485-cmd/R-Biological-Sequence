@@ -2,16 +2,17 @@
 
 # Project summary
 This repository contains two linked analyses:
-## •	Part 1: Data import, wrangling, summary statistics, visualization and simple hypothesis testing using:
+•	Part 1: Data import, wrangling, summary statistics, visualization and simple hypothesis testing using:
 o	gene_expression.tsv (RNA-seq counts)
 o	growth_data.csv (tree circumference, control vs treatment over 20 years)
-## •	Part 2: Comparative sequence analysis of coding DNA and translated proteins for:
+•	Part 2: Comparative sequence analysis of coding DNA and translated proteins for:
 o	Oxalobacter formigenes OXCC13 (assigned organism)
 o	Escherichia coli K-12 MG1655 (reference)
 All scripts are written in R and have been written and commented to be reproducible and easy to follow. Outputs (tables and plots) are produced in the outputs/ folder.
 
 # Repository structure
 Assessment/
+
 ├── data/  
 
 ├── output
@@ -22,10 +23,10 @@ Assessment/
 
  
 # Requirements and installation
-## Software
+Software
 •	R >= 4.0 recommended
 •	RStudio recommended for development and RMarkdown rendering
-## R packages (install once)
+R packages (install once)
 install.packages(c("dplyr", "ggplot2", "tidyr", "seqinr", "R.utils"))
 •	seqinr is used for reading FASTA files and sequence utilities.
 •	R.utils is used to decompress .gz files within R if required.
@@ -39,7 +40,7 @@ source("script.R")
 
 
 # Part 1 — Gene expression & growth analysis
-## Summary of approach
+Summary of approach
 •	Data import verification is performed prior to any modification.
 •	Row-wise operations (e.g., means) are added as new columns to preserve raw counts.
 •	Visualizations use ggplot2 and are saved to outputs/part1/ for report inclusion.
@@ -59,6 +60,7 @@ Method:
  
 
 Top 10 genes by mean:
+
 <img width="975" height="329" alt="image" src="https://github.com/user-attachments/assets/1c0434dd-4763-47de-9a89-204615888c41" />
 
 The top expressed genes include mitochondrial genes and canonical high-expression genes. The mean-based ranking reduces influence from single-sample extremes and highlights consistently highly expressed genes across samples.
@@ -92,7 +94,7 @@ The t-test could not be performed because one or both sites had insufficient non
 
  
 # Part 2 — Comparative sequence diversity analysis
-## Overview of approach
+Overview of approach
 •	CDS FASTA files were loaded with seqinr::read.fasta() (DNA sequences). If .fa.gz files were downloaded, R.utils::gunzip() was used to decompress in R while keeping .gz.
 •	All sequence-based operations used the raw CDS sequences; translation to protein sequences was performed via seqinr::translate() when protein analyses were required.
 •	Codon usage was calculated using seqinr::uco() (codon counts) and RSCU values were computed by grouping by amino acid and normalizing observed codon counts against equal-synonym expectation.
@@ -102,12 +104,8 @@ The t-test could not be performed because one or both sites had insufficient non
 Method: length(read.fasta(...)) was used to count CDS.
 Observed results:
 
-Organism	CDS_Count
-Oxalobacter formigenes OXCC13	1163
-Escherichia coli K-12 MG1655	4239
+<img width="975" height="237" alt="image" src="https://github.com/user-attachments/assets/9974afcd-d327-4fcc-9e17-2f26848931cd" />
 
-
- 
 
 Interpretation: E. coli has roughly twice the number of coding sequences, a finding consistent with larger genome size and broader metabolic repertoire.
 
@@ -122,11 +120,12 @@ Method
 •	Per-CDS lengths computed with nchar() and summarized using mean() and median().
 •	Distributions visualized with a ggplot2 boxplot. A histogram may also be used for a more granular view.
 
-Organism	Mean_Length	Median_Length
-Escherichia coli	938.5534	831
-Oxalobacter formigenes	969.2820	801
+Organism	                       Mean_Length	      Median_Length
+Escherichia coli	                938.5534	             831
+Oxalobacter formigenes	          969.2820	             801
 
- 
+ <img width="975" height="600" alt="image" src="https://github.com/user-attachments/assets/a3242c3d-8c78-448b-a1c4-339cc267a0be" />
+
 
 Interpretation: Although Oxalobacter has fewer CDS, the mean length is slightly higher, indicating fewer but somewhat longer coding sequences relative to E. coli. The median differences indicate distributional differences (e.g., more short genes in E. coli).
 
@@ -135,6 +134,8 @@ Method:
 •	Concatenate all CDS sequences for a species (unlisting the FASTA object) then compute nucleotide counts with table() or alphabetFrequency() and normalize to relative frequencies by dividing by the total base count.
 •	Translate CDS to protein using translate() and flatten the protein list to count amino acid occurrences via table().
 •	Produce bar charts for nucleotide composition (A, T, G, C) and for the 20 amino acids. Use ggplot2 with position = "dodge" to compare species side-by-side on the same plot.
+
+<img width="975" height="589" alt="image" src="https://github.com/user-attachments/assets/2f77168b-fa6a-4205-a50e-54b2901539d2" />
 
  
 Interpretation guidance:
