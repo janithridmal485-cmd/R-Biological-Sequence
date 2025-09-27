@@ -2,6 +2,7 @@
 
 # Project summary
 This repository contains two linked analyses:
+
 •	Part 1: Data import, wrangling, summary statistics, visualization and simple hypothesis testing using:
  o	gene_expression.tsv (RNA-seq counts)
  o	growth_data.csv (tree circumference, control vs treatment over 20 years)
