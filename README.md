@@ -4,11 +4,17 @@
 This repository contains two linked analyses:
 
 •	Part 1: Data import, wrangling, summary statistics, visualization and simple hypothesis testing using:
+ 
  o	gene_expression.tsv (RNA-seq counts)
+ 
  o	growth_data.csv (tree circumference, control vs treatment over 20 years)
+
 •	Part 2: Comparative sequence analysis of coding DNA and translated proteins for:
-o	Oxalobacter formigenes OXCC13 (assigned organism)
-o	Escherichia coli K-12 MG1655 (reference)
+
+ o	Oxalobacter formigenes OXCC13 (assigned organism)
+
+ o	Escherichia coli K-12 MG1655 (reference)
+
 All scripts are written in R and have been written and commented to be reproducible and easy to follow. Outputs (tables and plots) are produced in the outputs/ folder.
 
 # Repository structure
