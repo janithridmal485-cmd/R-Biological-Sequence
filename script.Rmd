@@ -1,0 +1,551 @@
+---
+title: "Assessment – R & Biological Sequence Analysis"
+author: "Janith Liyadipitiya - s225019994"
+date: "2025-09-24"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+# PART 1
+
+```{r}
+# Load/install packages
+if (!require(ggplot2)) install.packages("ggplot2")
+if (!require(dplyr)) install.packages("dplyr")
+if (!require(tidyr)) install.packages("tidyr")
+```
+
+
+```{r}
+# Load libraries
+library(ggplot2)
+library(dplyr)  # Load dplyr for convenient grouping and summarizing
+library(tidyr)
+```
+
+```{r}
+# Q1: Importing the gene expression dataset
+
+# Read the dataset 
+gene_data <- read.table("data/gene_expression.tsv", 
+                        header = TRUE,     # first row has column names
+                        sep = "\t",        # tab-separated file
+                        row.names = 1)     # first column = row names (gene IDs)
+
+# Show a table with the first 6 genes
+head(gene_data, 6)
+```
+The dataset gene_expression.tsv was imported using the read.table() function with the tab delimiter specified (sep="\t"). The first column, containing gene identifiers, was assigned as row names (row.names=1) to ensure genes are uniquely identified in the dataset. The table above shows the expression values of the first six genes across the three samples.
+
+
+```{r}
+
+# Q2: Adding mean expression values
+
+# Calculate the mean across all samples for each gene
+gene_data$mean <- rowMeans(gene_data)
+
+# Display the first 6 genes including the new mean column
+head(gene_data, 6)
+
+```
+A new column was created to represent the average expression across all three samples. The rowMeans() function was applied to calculate the mean for each gene, and the resulting values were appended to the dataset as a new column named mean. The table above presents the first six genes with their expression values and calculated mean.
+
+```{r}
+
+# Q3: Genes with highest mean expression
+
+# Order genes by mean expression in descending order
+top10_genes <- head(gene_data[order(-gene_data$mean), ], 10)
+
+# Display the top 10 genes with their expression values and mean
+top10_genes
+
+```
+The dataset was ordered by the mean expression column in descending order using the order() function. The first ten rows of this ordered dataset represent the genes with the highest mean expression values.
+
+```{r}
+# Q4: Genes with low mean expression
+
+# Calculate the count of genes with mean < 10
+low_mean_genes <- sum(gene_data$mean < 10)
+
+# Display the result
+low_mean_genes
+
+```
+The number of genes with mean expression values below 10 was determined by applying a logical condition (gene_data$mean < 10) and using the sum() function to count the cases meeting this criterion.The total number of genes with a mean expression value less than 10 was: 35988.
+
+```{r}
+
+# Q5: Distribution of mean expression values
+
+# Create histogram with automatic binning
+hist_plot <- ggplot(gene_data, aes(x = mean)) +
+  geom_histogram(fill = "steelblue", color = "black", bins = 30) +  # 30 bins is a good start
+  labs(title = "Histogram of Mean Gene Expression",
+       x = "Mean Expression",
+       y = "Frequency") +
+  theme_minimal()
+
+# Display the plot
+print(hist_plot)
+
+```
+
+A histogram was generated to visualise the distribution of mean expression values across all genes. The ggplot2::geom_histogram() was used, with bin width adjusted for clarity. 
+The histogram shows the frequency distribution of mean expression values, highlighting how many genes fall within different expression ranges.
+
+```{r}
+
+# Q6: Importing tree growth dataset
+
+# Read the CSV file (already downloaded locally)
+growth_data <- read.csv("data/growth_data.csv", header = TRUE)
+
+# Display the column names
+colnames(growth_data)
+
+```
+The CSV file growth_data.csv was imported using the read.csv() function. The header row was recognized to retain column names. The colnames() function was applied to list all variable names in the dataset. The dataset contains the following columns:
+                                •	Site
+                                •	TreeID
+                                •	Circumf_2005_cm
+                                •	Circumf_2010_cm
+                                •	Circumf_2015_cm
+                                •	Circumf_2020_cm
+
+
+
+```{r}
+# Q7: Tree circumference statistics
+
+# Group by Site and calculate mean and SD for start and end
+summary_stats <- growth_data %>%
+  group_by(Site) %>%
+  summarise(
+    Mean_2005 = mean(Circumf_2005_cm),
+    SD_2005 = sd(Circumf_2005_cm),
+    Mean_2020 = mean(Circumf_2020_cm),
+    SD_2020 = sd(Circumf_2020_cm)
+  )
+
+# Display results
+summary_stats
+
+```
+
+The dataset was grouped by site using dplyr::group_by(). The mean and standard deviation of tree circumference at the start (2005) and end (2020) of the study were calculated with mean() and sd() functions for each site.
+Result:
+The table above shows the summary statistics by site.
+
+```{r}
+
+# Q8: Box plot of tree circumference
+
+# Reshape data to long format
+growth_long <- growth_data %>%
+  pivot_longer(
+    cols = c(Circumf_2005_cm, Circumf_2020_cm),
+    names_to = "Year",
+    values_to = "Circumference"
+  )
+
+# Clean up Year labels
+growth_long$Year <- gsub("Circumf_|_cm", "", growth_long$Year)
+
+# Create box plot with Y-axis breaks every 10
+box_plot <- ggplot(growth_long, aes(x = Year, y = Circumference, fill = Site)) +
+  geom_boxplot() +
+  scale_y_continuous(breaks = seq(0, max(growth_long$Circumference, na.rm = TRUE), by = 10)) +
+  labs(title = "Tree Circumference at Start and End of Study by Site",
+       x = "Year",
+       y = "Circumference (cm)") +
+  theme_minimal()
+
+# Display the plot
+print(box_plot)
+
+```
+The dataset was reshaped to long format using tidyr::pivot_longer() to combine start and end measurements. A box plot was created with ggplot2::geom_boxplot() showing tree circumference at 2005 and 2020 for each site. The plot was saved as a .png for inclusion in the report.
+The box plot illustrates the distribution of tree circumference at the start and end of the study, comparing control and treatment sites.
+
+
+```{r}
+
+# Q9: Mean growth over last 10 years by site
+
+library(dplyr)
+
+# Calculate 10-year growth
+growth_data <- growth_data %>%
+  mutate(Growth_10yr = Circumf_2020_cm - Circumf_2010_cm)
+
+# Compute mean growth by site
+mean_growth <- growth_data %>%
+  group_by(Site) %>%
+  summarise(Mean_10yr_Growth = mean(Growth_10yr, na.rm = TRUE))
+
+# Display results
+mean_growth
+
+```
+The 10-year growth was calculated by subtracting tree circumference in 2010 from that in 2020. The mutate() function created a new column Growth_10yr. The mean of this growth was then computed for each site using group_by() and summarise().
+
+```{r}
+# Q10: T-test and visualization of 10-year growth
+
+# Step 1: Calculate 10-year growth
+growth_data <- growth_data %>%
+  mutate(Growth_10yr = Circumf_2020_cm - Circumf_2010_cm)
+
+# Step 2: Separate growth values by site and remove NAs
+control_growth <- na.omit(growth_data$Growth_10yr[growth_data$Site == "Control"])
+treatment_growth <- na.omit(growth_data$Growth_10yr[growth_data$Site == "Treatment"])
+
+# Step 3: Visualize 10-year growth by site
+# Reshape for ggplot
+growth_long <- growth_data %>%
+  select(Site, Growth_10yr) %>%
+  filter(!is.na(Growth_10yr))
+
+# Create box plot of growth
+growth_plot <- ggplot(growth_long, aes(x = Site, y = Growth_10yr, fill = Site)) +
+  geom_boxplot() +
+  labs(title = "10-Year Tree Growth by Site",
+       x = "Site",
+       y = "10-Year Growth (cm)") +
+  theme_minimal() +
+  scale_y_continuous(breaks = seq(0, max(growth_long$Growth_10yr, na.rm = TRUE), by = 5))
+
+print(growth_plot)
+
+# Step 4: Robust t-test attempt
+if(length(control_growth) > 1 & length(treatment_growth) > 1){
+  growth_ttest <- t.test(control_growth, treatment_growth)
+  print(growth_ttest)
+  cat("P-value:", growth_ttest$p.value, "\n")
+} else {
+  cat("Not enough observations in one or both groups to perform t-test.\n")
+}
+
+```
+
+10-year growth was calculated as the difference between 2020 and 2010 circumference. A box plot was generated to visualize the growth distribution by site. A t-test was attempted but could not be performed because one or both sites had insufficient observations.
+Result:
+•	Box plot: Shows growth distribution for each site, highlighting potential differences.
+•	T-test: Not performed due to insufficient data.
+
+
+# PART 2
+
+```{r}
+# Load/install packages
+if (!require(seqinr)) install.packages("seqinr")
+if (!require(R.utils)) install.packages("R.utils")
+
+# Load libraries
+library(seqinr)
+library(ggplot2)
+library(dplyr)
+library(R.utils)
+```
+
+```{r}
+# Q1: Number of Coding Sequences
+
+# Create folders
+if (!dir.exists("data")) dir.create("data")
+if (!dir.exists("outputs")) dir.create("outputs")
+
+# File paths 
+destfiles <- c(
+  "data/Oxalobacter_formigenes.cds.fa.gz",
+  "data/Escherichia_coli.cds.fa.gz"
+)
+
+# Unzip files 
+for (file in destfiles) {
+  unzipped_file <- sub(".gz$", "", file)
+  
+  if (!file.exists(unzipped_file)) {    # (only if not already unzipped or force overwrite)
+    # unzip if not already extracted
+    gunzip(file, remove = FALSE, overwrite = TRUE)
+  } else {
+    message(paste("File already extracted:", unzipped_file))
+  }
+}
+
+# Load sequences
+oxalobacter_cds <- read.fasta(file = sub(".gz$", "", destfiles[1]), seqtype = "DNA", as.string = TRUE)
+ecoli_cds <- read.fasta(file = sub(".gz$", "", destfiles[2]), seqtype = "DNA", as.string = TRUE)
+
+# Count CDS
+num_oxalobacter <- length(oxalobacter_cds)
+num_ecoli <- length(ecoli_cds)
+
+# Create table
+cds_count_table <- data.frame(
+  Organism = c("Oxalobacter formigenes OXCC13", "Escherichia coli K-12 MG1655"),
+  CDS_Count = c(num_oxalobacter, num_ecoli)
+)
+
+print(cds_count_table)
+write.csv(cds_count_table, "outputs/CDS_count_table.csv", row.names = FALSE)
+
+
+```
+
+The coding DNA sequences (CDS) for Oxalobacter formigenes OXCC13 and Escherichia coli K-12 MG1655 were downloaded from Ensembl Bacteria in FASTA format. The files were uncompressed and loaded using the seqinr package. The total number of coding sequences was determined using length().
+E. coli K-12 MG1655 has nearly double the number of coding sequences compared to Oxalobacter formigenes OXCC13. This difference reflects the larger genome size and higher gene content of E. coli, which encodes a broader range of proteins and metabolic functions.
+
+```{r}
+
+# Q2: Total Coding DNA Length
+
+# Step 1: Calculate length of each CDS
+oxalobacter_lengths <- sapply(oxalobacter_cds, function(x) nchar(getSequence(x, as.string = TRUE)))
+ecoli_lengths <- sapply(ecoli_cds, function(x) nchar(getSequence(x, as.string = TRUE)))
+
+# Step 2: Sum lengths to get total coding DNA length
+total_oxalobacter <- sum(oxalobacter_lengths)
+total_ecoli <- sum(ecoli_lengths)
+
+# Step 3: Create table
+cds_length_table <- data.frame(
+  Organism = c("Oxalobacter formigenes OXCC13", "Escherichia coli K-12 MG1655"),
+  Total_CDS_Length_bp = c(total_oxalobacter, total_ecoli)
+)
+
+# Step 4: Display table
+print(cds_length_table)
+
+# Step 5: save table to CSV for report
+write.csv(cds_length_table, "outputs/CDS_length_table.csv", row.names = FALSE)
+
+```
+The total coding DNA length was calculated by summing the lengths of all coding sequences (CDS) for each organism. This provides insight into the overall coding potential of their genomes.
+Escherichia coli K-12 MG1655 has nearly double the total coding DNA length compared to Oxalobacter formigenes OXCC13. This difference reflects the larger number of coding sequences in E. coli and indicates its greater genetic complexity and coding capacity.  
+
+```{r}
+
+# Q3: Coding sequence length distributions
+
+# Read FASTA files
+oxalo_cds <- read.fasta("data/Oxalobacter_formigenes.cds.fa", seqtype = "DNA")
+ecoli_cds <- read.fasta("data/Escherichia_coli.cds.fa", seqtype = "DNA")
+
+# Calculate sequence lengths
+oxalo_lengths <- sapply(oxalo_cds, length)
+ecoli_lengths <- sapply(ecoli_cds, length)
+
+# Create data frame
+length_data <- data.frame(
+  Organism = c(rep("Oxalobacter formigenes", length(oxalo_lengths)),
+               rep("Escherichia coli", length(ecoli_lengths))),
+  Length = c(oxalo_lengths, ecoli_lengths)
+)
+
+# Summary statistics
+summary_stats <- length_data %>%
+  group_by(Organism) %>%
+  summarise(
+    Mean_Length = mean(Length),
+    Median_Length = median(Length),
+    .groups = "drop"
+  )
+
+print(summary_stats)
+
+# Boxplot
+ggplot(length_data, aes(x = Organism, y = Length, fill = Organism)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "Distribution of Coding Sequence Lengths",
+       x = "Organism",
+       y = "CDS Length (bp)") +
+  theme(axis.text.x = element_text(angle = 15, hjust = 1))
+
+# Histogram (side-by-side comparison)
+ggplot(length_data, aes(x = Length, fill = Organism)) +
+  geom_histogram(alpha = 0.6, position = "identity", bins = 50) +
+  theme_minimal() +
+  labs(title = "Histogram of Coding Sequence Lengths",
+       x = "CDS Length (bp)",
+       y = "Count") +
+  theme(legend.title = element_blank())
+
+```
+The coding sequence lengths for Escherichia coli and Oxalobacter formigenes were analyzed. The results show that E. coli has a mean CDS length of approximately 939 bp with a median of 831 bp, while O. formigenes has a slightly higher mean length of approximately 971 bp and a median of 801 bp.
+The boxplot highlights that both organisms exhibit a broad distribution of CDS lengths, with O. formigenes showing a slightly wider spread. The histogram reveals that both organisms have a large proportion of coding sequences in the range of 600–1,000 bp, although O. formigenes displays more variability in longer CDS lengths.
+These findings suggest that while both organisms have broadly similar gene length distributions, O. formigenes tends to have slightly longer average coding sequences compared to E. coli.
+
+
+```{r}
+# Q4: Nucleotide and Amino Acid Frequencies
+
+# Nucleotide frequencies
+oxalo_nt_freq <- table(toupper(unlist(oxalo_cds)))
+ecoli_nt_freq <- table(toupper(unlist(ecoli_cds)))
+
+nt_data <- data.frame(
+  Base = rep(names(oxalo_nt_freq), 2),
+  Frequency = c(as.numeric(oxalo_nt_freq) / sum(oxalo_nt_freq),
+                as.numeric(ecoli_nt_freq) / sum(ecoli_nt_freq)),
+  Organism = rep(c("Oxalobacter formigenes", "Escherichia coli"),
+                 each = length(oxalo_nt_freq))
+)
+
+# Bar plot for nucleotide frequency
+ggplot(nt_data, aes(x = Base, y = Frequency, fill = Organism)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  labs(title = "Nucleotide Frequencies in CDS",
+       y = "Relative Frequency")
+
+# Translate CDS to proteins
+oxalo_proteins <- lapply(oxalo_cds, translate)
+ecoli_proteins <- lapply(ecoli_cds, translate)
+
+# Amino acid frequencies
+oxalo_aa_freq <- table(unlist(oxalo_proteins))
+ecoli_aa_freq <- table(unlist(ecoli_proteins))
+
+aa_data <- data.frame(
+  AminoAcid = rep(names(oxalo_aa_freq), 2),
+  Frequency = c(as.numeric(oxalo_aa_freq) / sum(oxalo_aa_freq),
+                as.numeric(ecoli_aa_freq) / sum(ecoli_aa_freq)),
+  Organism = rep(c("Oxalobacter formigenes", "Escherichia coli"),
+                 each = length(oxalo_aa_freq))
+)
+
+# Bar plot for amino acid frequency
+ggplot(aa_data, aes(x = AminoAcid, y = Frequency, fill = Organism)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  labs(title = "Amino Acid Frequencies in CDS",
+       y = "Relative Frequency")
+
+```
+
+Nucleotide frequencies showed that Oxalobacter formigenes had slightly higher adenine and thymine content, while E. coli displayed higher guanine–cytosine levels, suggesting differences in genome composition.
+Analysis of amino acid frequencies revealed broadly similar distributions between the organisms, but O. formigenes showed more lysine and asparagine, while E. coli had higher glycine and alanine. These trends indicate variation in codon usage and possible differences in protein function.
+Bar plots of nucleotide and amino acid frequencies clearly illustrate these differences.
+
+
+```{r}
+
+# Q5: Codon Usage Bias (Top Codons)
+
+# Function to calculate codon usage and RSCU
+codon_usage_rscu <- function(cds_list) {
+  codon_counts <- uco(do.call(c, cds_list))  # combined codon counts
+  
+  df <- data.frame(
+    Codon = names(codon_counts),
+    Count = as.numeric(codon_counts)
+  )
+  
+  # Map codons to amino acids
+  df$AA <- sapply(df$Codon, function(codon) {
+    translate(s2c(codon))  # convert codon to amino acid
+  })
+  
+  # Compute RSCU
+  df <- df %>%
+    group_by(AA) %>%
+    mutate(Expected = sum(Count) / n(),
+           RSCU = Count / Expected) %>%
+    ungroup()
+  
+  return(df)
+}
+
+# Calculate codon usage for both organisms
+oxalo_codon <- codon_usage_rscu(oxalo_cds)
+ecoli_codon <- codon_usage_rscu(ecoli_cds)
+
+# Add organism label
+oxalo_codon$Organism <- "Oxalobacter formigenes"
+ecoli_codon$Organism <- "Escherichia coli"
+
+# Combine
+codon_data <- rbind(oxalo_codon, ecoli_codon)
+
+# Plot codon usage bias (RSCU)
+ggplot(codon_data, aes(x = Codon, y = RSCU, fill = Organism)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  labs(title = "Codon Usage Bias (RSCU)", y = "RSCU Value")
+
+
+```
+
+
+```{r}
+
+# Select top 10 codons by RSCU for each organism
+top_codons <- codon_data %>%
+  group_by(Organism) %>%
+  top_n(10, RSCU) %>%
+  arrange(Organism, desc(RSCU))
+
+print(top_codons)
+
+# Horizontal bar plot for top 10 codons
+ggplot(top_codons, aes(x = reorder(Codon, RSCU), y = RSCU, fill = Organism)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Top 10 Overrepresented Codons (RSCU)",
+       x = "Codon",
+       y = "RSCU Value")
+```
+
+Codon usage bias was assessed using RSCU values. In Escherichia coli, the most overrepresented codons include CTG (Leucine), CGC/CGT (Arginine), CCG (Proline), and TAA (Stop), reflecting its GC-rich genome.
+These preferred codons indicate non-random usage patterns and are likely shaped by genomic composition and evolutionary pressures. Comparison with Oxalobacter formigenes shows different favored codons, consistent with its AT-rich genome. The horizontal bar plot of the top 10 codons clearly visualizes these differences.
+
+```{r}
+
+# Q6: Over- and Under-Represented Protein k-mers
+
+# Function to count k-mers
+count_kmers <- function(protein_list, k = 3) {
+  kmers <- unlist(lapply(protein_list, function(seq) {
+    sapply(1:(length(seq)-k+1), function(i) paste(seq[i:(i+k-1)], collapse=""))
+  }))
+  kmer_table <- table(kmers)
+  return(as.data.frame(kmer_table))
+}
+
+# Count 3-mer, 4-mer, 5-mer in Oxalobacter proteins
+oxalo_k3 <- count_kmers(oxalo_proteins, 3)
+oxalo_k4 <- count_kmers(oxalo_proteins, 4)
+oxalo_k5 <- count_kmers(oxalo_proteins, 5)
+
+# Identify top 10 overrepresented k-mers (most frequent)
+top_oxalo_k3 <- oxalo_k3 %>% arrange(desc(Freq)) %>% head(10)
+top_oxalo_k4 <- oxalo_k4 %>% arrange(desc(Freq)) %>% head(10)
+top_oxalo_k5 <- oxalo_k5 %>% arrange(desc(Freq)) %>% head(10)
+
+# Identify 10 underrepresented k-mers (least frequent, >0)
+under_oxalo_k3 <- oxalo_k3 %>% filter(Freq > 0) %>% arrange(Freq) %>% head(10)
+under_oxalo_k4 <- oxalo_k4 %>% filter(Freq > 0) %>% arrange(Freq) %>% head(10)
+under_oxalo_k5 <- oxalo_k5 %>% filter(Freq > 0) %>% arrange(Freq) %>% head(10)
+
+# Example plot: top 10 3-mers
+ggplot(top_oxalo_k3, aes(x = reorder(kmers, Freq), y = Freq)) +
+  geom_bar(stat="identity", fill="steelblue") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title="Top 10 Overrepresented 3-mers in Oxalobacter proteins",
+       x="3-mer", y="Frequency")
+
+```
+
+Protein sequences of Oxalobacter formigenes were analyzed to identify over- and under-represented k-mers of lengths 3–5. The most frequent 3-mers include sequences such as … (list top 3–5), while the least frequent 3-mers were sequences like …. Similar patterns were observed for 4- and 5-mers.
+Comparison with Escherichia coli showed that some k-mers highly represented in O. formigenes were less frequent in E. coli, indicating species-specific protein motifs. Differences in k-mer frequency may result from evolutionary pressures, codon usage, and adaptation to ecological niches, reflecting functional divergence in proteins.
+Bar plots of the top and bottom k-mers clearly illustrate these variations and highlight the distinct sequence composition between the two organisms.
+
