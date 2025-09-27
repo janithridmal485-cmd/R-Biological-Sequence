@@ -1,21 +1,19 @@
-# R-based data analysis (gene expression & tree growth) and comparative sequence analysis #
+# R-based data analysis (gene expression & tree growth) and comparative sequence analysis
 
-# Project summary
+## Project summary
 This repository contains two linked analyses:
 
-•	Part 1: Data import, wrangling, summary statistics, visualization and simple hypothesis testing using:
- 
- o	gene_expression.tsv (RNA-seq counts)
- 
- o	growth_data.csv (tree circumference, control vs treatment over 20 years)
+- **Part 1**: Data import, wrangling, summary statistics, visualization and simple hypothesis testing using:
+  - `gene_expression.tsv` (RNA-seq counts)
+  - `growth_data.csv` (tree circumference, control vs treatment over 20 years)
 
-•	Part 2: Comparative sequence analysis of coding DNA and translated proteins for:
+- **Part 2**: Comparative sequence analysis of coding DNA and translated proteins for:
+  - *Oxalobacter formigenes* OXCC13 (assigned organism)
+  - *Escherichia coli* K-12 MG1655 (reference)
 
- o	Oxalobacter formigenes OXCC13 (assigned organism)
+All scripts are written in **R**, designed for reproducibility, and generate outputs (tables and plots) in the `outputs/` folder.
 
- o	Escherichia coli K-12 MG1655 (reference)
-
-All scripts are written in R and have been written and commented to be reproducible and easy to follow. Outputs (tables and plots) are produced in the outputs/ folder.
+## Repository structure
 
 # Repository structure
 Assessment/
@@ -28,15 +26,17 @@ Assessment/
 
 └── README.md
 
- 
-# Requirements and installation
-Software
-•	R >= 4.0 recommended
-•	RStudio recommended for development and RMarkdown rendering
-R packages (install once)
+
+## Requirements and installation
+
+### Software
+- R ≥ 4.0 (recommended)
+- RStudio (recommended for development and RMarkdown rendering)
+
+### R packages
+Install once:
+
 install.packages(c("dplyr", "ggplot2", "tidyr", "seqinr", "R.utils"))
-•	seqinr is used for reading FASTA files and sequence utilities.
-•	R.utils is used to decompress .gz files within R if required.
 
 # How to run the analysis (step-by-step)
 1.	Clone the repository and set the working directory to the repository root.
@@ -48,9 +48,9 @@ source("script.R")
 
 # Part 1 — Gene expression & growth analysis
 Summary of approach
-•	Data import verification is performed prior to any modification.
-•	Row-wise operations (e.g., means) are added as new columns to preserve raw counts.
-•	Visualizations use ggplot2 and are saved to outputs/part1/ for report inclusion.
+-	Data import verification is performed prior to any modification.
+-	Row-wise operations (e.g., means) are added as new columns to preserve raw counts.
+-	Visualizations use ggplot2 and are saved to outputs/part1/ for report inclusion.
 •	Statistical tests check preconditions (non-missing data, adequate sample counts). If t-test requirements are not met, results are reported and alternative visualizations are provided.
 
 
