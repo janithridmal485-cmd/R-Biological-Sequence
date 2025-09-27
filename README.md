@@ -12,9 +12,12 @@ All scripts are written in R and have been written and commented to be reproduci
 
 # Repository structure
 Assessment/
-├── data/                     
+├── data/  
+
 ├── output
+
 ├── script.R
+
 └── README.md
 
  
@@ -67,6 +70,9 @@ Key steps:
 •	Inspect columns via colnames() to ensure the expected fields are present.
 •	Compute means and standard deviations grouped by Site.
 •	Reshape to long format and plot boxplots with ggplot2::geom_boxplot(). Y-axis ticks have been adjusted to show 10 cm increments for clarity.
+
+<img width="975" height="589" alt="image" src="https://github.com/user-attachments/assets/9e1e395a-5874-4cba-be29-6aa18a727271" />
+
  
 Interpretation guidance:
 Examine differences in median values and spread (IQR). Larger median increase at treatment site suggests treatment-related growth advantages; verify with Q7 and Q8.
@@ -82,8 +88,9 @@ o	If both groups have ≥ 2 observations, run t.test(); otherwise, print a clear
 Note:
 The t-test could not be performed because one or both sites had insufficient non-missing observations for Growth_10yr. In such cases, the code conservatively reports the limitation and includes boxplot visual assessment.
 
- 
+<img width="975" height="559" alt="image" src="https://github.com/user-attachments/assets/b76841c2-7650-4885-ae4b-ee6066fcd61a" />
 
+ 
 # Part 2 — Comparative sequence diversity analysis
 ## Overview of approach
 •	CDS FASTA files were loaded with seqinr::read.fasta() (DNA sequences). If .fa.gz files were downloaded, R.utils::gunzip() was used to decompress in R while keeping .gz.
@@ -94,6 +101,7 @@ The t-test could not be performed because one or both sites had insufficient non
 # Q1: Number of coding sequences
 Method: length(read.fasta(...)) was used to count CDS.
 Observed results:
+
 Organism	CDS_Count
 Oxalobacter formigenes OXCC13	1163
 Escherichia coli K-12 MG1655	4239
